@@ -1,0 +1,248 @@
+# ============================================================
+# Chrome + Via 浏览器分流规则 - Quantumult X (完整版)
+# 生成时间: 2026-11-19
+# 用途: 让 Chrome 和 Via 两个浏览器走代理, 其他流量按规则走
+# 策略: proxy (默认代理策略) / direct (直连)
+#
+# 如果你的策略组不叫 proxy, 把下面所有的 proxy 改成你的策略组名,
+# 例如: 美国节点、香港节点、PROXY 等, 批量替换即可;
+# 或者在 [filter_remote] 里用 force-policy=你的组名, 不用改文件
+#
+# 用法 1 - 本地规则 (推荐, 最稳):
+#   QX -> 配置文件 -> 编辑 -> 在 [filter_local] 段粘贴本文件全部内容
+#
+# 用法 2 - 远程规则:
+#   在 [filter_remote] 段加一行:
+#   https://raw.githubusercontent.com/xian9158/muse-qx-rules/main/Chrome-Via.list, tag=Chrome-Via, enabled=true
+#   或加 force-policy 覆盖策略名:
+#   https://raw.githubusercontent.com/xian9158/muse-qx-rules/main/Chrome-Via.list, tag=Chrome-Via, force-policy=proxy, enabled=true
+#
+# 用法 3 - 导入本文件:
+#   QX -> 分流 -> 右上角 + -> 导入, 选择本文件 Chrome-Via.list
+#
+# 注意 (先看, 很重要):
+#   1. QX 右上角模式要切到「规则分流」, 全局代理/直连下分流不生效
+#   2. QX 的分流文件没有 PROCESS-NAME 规则, iOS 不提供进程 API,
+#      所以「只让 Chrome / Via 这两个 App 走代理、其他 App 直连」
+#      用分流文件本身是做不到的, 只能用 USER-AGENT 来认浏览器
+#   3. USER-AGENT 规则只对 HTTP 请求直接生效; iOS 15+ 之后 HTTPS
+#      在 CONNECT 里不带 UA, 不开 MITM 就看不到 UA、规则不生效
+#      想让 UA 规则对 HTTPS 也生效, 要在 QX 里开 MITM 并装证书信任
+#      ([mitm] 里 hostname 加 *, 再装证书)
+#   4. 所以本文件是两层兜底: UA 认浏览器 + 域名/IP 认网站,
+#      你在 Chrome / Via 里打开的海外网站, 无论开不开 MITM 都会走代理;
+#      国内网站、国内 IP、局域网一律直连
+#   5. 真要做到「按 App 分流」(同个网站, Chrome 走代理、其他 App 直连),
+#      QX 做不到, 得换 Surge / Loon / Stash, 它们支持 PROCESS-NAME
+#   6. 规则优先级: HOST > HOST-SUFFIX > HOST-WILDCARD > HOST-KEYWORD
+#      > USER-AGENT > IP 类型规则; 同类型里按文件顺序, 先命中先生效
+# ============================================================
+
+# ---------------- 一、USER-AGENT: 认出 Chrome 和 Via ----------------
+# Chrome (iOS): UA 里带 CriOS, 如 CriOS/140.0.0.0
+# Chrome (安卓/桌面): UA 里带 Chrome/xxx, 但 iOS 上所有浏览器都用 WebKit,
+#   Chrome 一律是 CriOS, 所以 CriOS 是 iOS 上认 Chrome 最准的标志
+# Via 浏览器: UA 末尾带 Via/x.x.x, 如 Via/4.8.0
+# 注意: 这段只对 HTTP 直接生效, HTTPS 需开 MITM 才生效 (见文件头第 3 条)
+user-agent, *CriOS*, proxy
+user-agent, *CriOS/*, proxy
+user-agent, *Via/*, proxy
+user-agent, *Via*, proxy
+user-agent, *Chrome/*, proxy
+
+# ---------------- 二、Chrome / Google 服务 (浏览器最常用) ----------------
+# Chrome 同步、地址栏搜索、翻译、安全浏览、扩展商店、更新都走这些
+host-suffix, google.com, proxy
+host-suffix, googleapis.com, proxy
+host-suffix, gstatic.com, proxy
+host-suffix, googleusercontent.com, proxy
+host-suffix, googlevideo.com, proxy
+host-suffix, youtube.com, proxy
+host-suffix, ytimg.com, proxy
+host-suffix, gmail.com, proxy
+host-suffix, googledrive.com, proxy
+host-suffix, googlesyndication.com, proxy
+host-suffix, google-analytics.com, proxy
+host-suffix, googletagmanager.com, proxy
+host-suffix, ggpht.com, proxy
+host-suffix, chrome.com, proxy
+host-suffix, chromium.org, proxy
+host-suffix, withgoogle.com, proxy
+host-suffix, blog.google, proxy
+host-suffix, ai.google.dev, proxy
+host-suffix, gemini.google.com, proxy
+host-suffix, bard.google.com, proxy
+host-suffix, translate.google.com, proxy
+host-suffix, maps.google.com, proxy
+host-suffix, drive.google.com, proxy
+host-suffix, docs.google.com, proxy
+host-suffix, scholar.google.com, proxy
+host-suffix, play.google.com, proxy
+
+# ---------------- 三、海外常用网站 (浏览器里打开都走代理) ----------------
+# 搜索 / 社交
+host-suffix, bing.com, proxy
+host-suffix, duckduckgo.com, proxy
+host-suffix, yahoo.com, proxy
+host-suffix, twitter.com, proxy
+host-suffix, x.com, proxy
+host-suffix, twimg.com, proxy
+host-suffix, facebook.com, proxy
+host-suffix, fb.com, proxy
+host-suffix, fbcdn.net, proxy
+host-suffix, instagram.com, proxy
+host-suffix, cdninstagram.com, proxy
+host-suffix, threads.net, proxy
+host-suffix, reddit.com, proxy
+host-suffix, redditmedia.com, proxy
+host-suffix, telegram.org, proxy
+host-suffix, t.me, proxy
+host-suffix, whatsapp.com, proxy
+host-suffix, whatsapp.net, proxy
+host-suffix, discord.com, proxy
+host-suffix, discordapp.com, proxy
+host-suffix, discord.gg, proxy
+host-suffix, twitch.tv, proxy
+host-suffix, tiktok.com, proxy
+host-suffix, tiktokcdn.com, proxy
+host-suffix, pinterest.com, proxy
+host-suffix, pinimg.com, proxy
+host-suffix, tumblr.com, proxy
+host-suffix, medium.com, proxy
+host-suffix, quora.com, proxy
+host-suffix, stackoverflow.com, proxy
+host-suffix, stackexchange.com, proxy
+
+# AI / 开发
+host-suffix, openai.com, proxy
+host-suffix, chatgpt.com, proxy
+host-suffix, oaistatic.com, proxy
+host-suffix, oaiusercontent.com, proxy
+host-suffix, anthropic.com, proxy
+host-suffix, claude.ai, proxy
+host-suffix, claude.com, proxy
+host-suffix, github.com, proxy
+host-suffix, githubusercontent.com, proxy
+host-suffix, githubassets.com, proxy
+host-suffix, gitlab.com, proxy
+host-suffix, npmjs.com, proxy
+host-suffix, jsdelivr.net, proxy
+host-suffix, unpkg.com, proxy
+host-suffix, cloudflare.com, proxy
+host-suffix, wikipedia.org, proxy
+host-suffix, wikimedia.org, proxy
+
+# 视频 / 流媒体 / 音乐
+host-suffix, netflix.com, proxy
+host-suffix, nflximg.net, proxy
+host-suffix, nflxvideo.net, proxy
+host-suffix, disneyplus.com, proxy
+host-suffix, hulu.com, proxy
+host-suffix, hbomax.com, proxy
+host-suffix, primevideo.com, proxy
+host-suffix, spotify.com, proxy
+host-suffix, scdn.co, proxy
+host-suffix, vimeo.com, proxy
+host-suffix, dailymotion.com, proxy
+
+# 新闻 / 其他
+host-suffix, bbc.com, proxy
+host-suffix, bbc.co.uk, proxy
+host-suffix, cnn.com, proxy
+host-suffix, nytimes.com, proxy
+host-suffix, theguardian.com, proxy
+host-suffix, reuters.com, proxy
+host-suffix, bloomberg.com, proxy
+host-suffix, wsj.com, proxy
+host-suffix, economist.com, proxy
+host-suffix, amazon.com, proxy
+host-suffix, ebay.com, proxy
+host-suffix, paypal.com, proxy
+
+# 关键字兜底: 域名里含这些词的都走代理
+host-keyword, google, proxy
+host-keyword, youtube, proxy
+host-keyword, twitter, proxy
+host-keyword, facebook, proxy
+host-keyword, instagram, proxy
+host-keyword, telegram, proxy
+host-keyword, openai, proxy
+host-keyword, chatgpt, proxy
+host-keyword, github, proxy
+
+# ---------------- 四、国内网站直连 (浏览器打开不绕路) ----------------
+# 国内站走代理反而慢、还可能触发风控, 一律直连
+host-suffix, baidu.com, direct
+host-suffix, bdstatic.com, direct
+host-suffix, qq.com, direct
+host-suffix, weixin.qq.com, direct
+host-suffix, weibo.com, direct
+host-suffix, weibo.cn, direct
+host-suffix, zhihu.com, direct
+host-suffix, zhimg.com, direct
+host-suffix, taobao.com, direct
+host-suffix, tmall.com, direct
+host-suffix, alipay.com, direct
+host-suffix, alibaba.com, direct
+host-suffix, alicdn.com, direct
+host-suffix, jd.com, direct
+host-suffix, jdcdn.com, direct
+host-suffix, pinduoduo.com, direct
+host-suffix, meituan.com, direct
+host-suffix, meituan.net, direct
+host-suffix, dianping.com, direct
+host-suffix, ele.me, direct
+host-suffix, 12306.cn, direct
+host-suffix, bilibili.com, direct
+host-suffix, bilibili.cn, direct
+host-suffix, hdslb.com, direct
+host-suffix, acgvideo.com, direct
+host-suffix, youku.com, direct
+host-suffix, iqiyi.com, direct
+host-suffix, v.qq.com, direct
+host-suffix, douyin.com, direct
+host-suffix, douyincdn.com, direct
+host-suffix, kuaishou.com, direct
+host-suffix, xiaohongshu.com, direct
+host-suffix, xhslink.com, direct
+host-suffix, sina.com.cn, direct
+host-suffix, sina.cn, direct
+host-suffix, sohu.com, direct
+host-suffix, 163.com, direct
+host-suffix, 126.com, direct
+host-suffix, aliyun.com, direct
+host-suffix, tencent.com, direct
+host-suffix, cctv.com, direct
+host-suffix, people.com.cn, direct
+host-suffix, xinhuanet.com, direct
+
+# ---------------- 五、IP 规则: 局域网直连, 海外 IP 走代理 ----------------
+# 局域网 / 内网地址一律直连, no-resolve 表示不先解析域名、直接按 IP 匹配
+ip-cidr, 192.168.0.0/16, direct, no-resolve
+ip-cidr, 10.0.0.0/8, direct, no-resolve
+ip-cidr, 172.16.0.0/12, direct, no-resolve
+ip-cidr, 127.0.0.0/8, direct, no-resolve
+ip-cidr, 100.64.0.0/10, direct, no-resolve
+ip-cidr, 224.0.0.0/4, direct, no-resolve
+ip-cidr, 240.0.0.0/4, direct, no-resolve
+
+# 中国 IP 直连 (GEOIP 需 QX 内置 IP 库支持)
+geoip, CN, direct
+
+# Google / Cloudflare 等海外服务商 IP 段兜底, 域名规则漏了就靠 IP 兜
+ip-asn, 15169, proxy
+ip-asn, 13335, proxy
+ip-asn, 16509, proxy
+ip-asn, 8075, proxy
+ip-asn, 32934, proxy
+ip-cidr, 8.8.8.8/32, proxy, no-resolve
+ip-cidr, 8.8.4.4/32, proxy, no-resolve
+ip-cidr, 1.1.1.1/32, proxy, no-resolve
+ip-cidr, 1.0.0.1/32, proxy, no-resolve
+
+# ---------------- 六、兜底 ----------------
+# 上面都没命中的: 国内 IP 已在第五节直连, 剩下的默认走代理,
+# 这样 Chrome / Via 里打开没列出来的海外站也能打开
+# 如果你只想让上面列出来的站走代理、其他全部直连,
+# 把下面这行改成 final, direct
+final, proxy
