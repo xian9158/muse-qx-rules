@@ -1,0 +1,129 @@
+# ============================================================
+# Muse 分流规则 - Quantumult X (完整版)
+# 生成时间: 2026-11-18
+# 用途: 让 Muse App / muse.ai / Meta AI 的流量全部走代理
+# 策略: proxy (默认策略)
+#
+# 如果你的策略组不叫 proxy, 把下面所有的 proxy 改成你的策略组名,
+# 例如: 美国节点、香港节点、PROXY、美国专线 等, 批量替换即可
+#
+# 用法 1 - 本地规则 (推荐, 最稳):
+#   QX -> 配置文件 -> 编辑 -> 在 [filter_local] 段粘贴本文件全部内容
+#
+# 用法 2 - 远程规则:
+#   把本文件传到 GitHub / 你的服务器, 拿到 Raw 直链后,
+#   在 [filter_remote] 段加一行:
+#   https://你的直链/Muse.list, tag=Muse, enabled=true
+#
+# 用法 3 - 导入本文件:
+#   QX -> 分流 -> 右上角 + -> 导入, 选择本文件 Muse.list
+#
+# 注意:
+#   1. QX 右上角模式要切到「规则分流」, 全局代理/直连下分流不生效
+#   2. Muse 的 VM 通道是 wss://hatch.metaaivm.com, 已包含在 metaaivm.com 里
+#   3. 改完点右上角保存, 再点一次更新分流规则, 杀掉 Muse 后台重开
+#   4. 规则优先级: HOST > HOST-SUFFIX > HOST-KEYWORD > IP-CIDR,
+#      所以下面 HOST / HOST-SUFFIX / HOST-KEYWORD / IP 段都有, 互相兜底
+#   5. 如果只想让 Muse 走代理、不想动 Facebook/Instagram,
+#      只留「一、核心」那段, 其他段删掉即可
+# ============================================================
+
+# ---------------- 一、Muse 核心 (必备) ----------------
+# muse.ai: Muse 官网 / 网页版
+# meta.ai: Meta AI 主站, 覆盖 hatch-api.meta.ai / graph.meta.ai / api.meta.ai
+# metaaivm.com: Muse Secure VM 通道, 覆盖 hatch.metaaivm.com (wss)
+host, muse.ai, proxy
+host-suffix, muse.ai, proxy
+host, meta.ai, proxy
+host-suffix, meta.ai, proxy
+host, metaaivm.com, proxy
+host-suffix, metaaivm.com, proxy
+host, hatch.metaaivm.com, proxy
+host-suffix, hatch.metaaivm.com, proxy
+host, hatch-api.meta.ai, proxy
+host-suffix, hatch-api.meta.ai, proxy
+host, graph.meta.ai, proxy
+host-suffix, graph.meta.ai, proxy
+host, api.meta.ai, proxy
+host-suffix, api.meta.ai, proxy
+host-suffix, ai.meta.ai, proxy
+host-suffix, accounts.meta.ai, proxy
+host-suffix, auth.meta.ai, proxy
+
+# 关键字兜底: 域名里含 muse / hatch / metaaivm 的都走代理
+host-keyword, muse, proxy
+host-keyword, hatch, proxy
+host-keyword, metaaivm, proxy
+
+# ---------------- 二、Meta 账号登录 / 鉴权 ----------------
+# Muse 用 Meta / Facebook 账号登录, 登录、验证、换 token 走这些
+host-suffix, meta.com, proxy
+host-suffix, facebook.com, proxy
+host-suffix, fb.com, proxy
+host-suffix, graph.facebook.com, proxy
+host-suffix, api.facebook.com, proxy
+host-suffix, login.facebook.com, proxy
+host-suffix, secure.facebook.com, proxy
+host-suffix, web.facebook.com, proxy
+host-suffix, m.facebook.com, proxy
+host-suffix, fbcdn.net, proxy
+host-suffix, fbsbx.com, proxy
+host-suffix, fbwat.ch, proxy
+
+# ---------------- 三、Instagram / Messenger / WhatsApp ----------------
+# Muse 会连通 Instagram / Messenger / WhatsApp, 在 App 里发消息、
+# 读动态、收通知时走这些; 不用这几个可整段删掉
+host-suffix, instagram.com, proxy
+host-suffix, cdninstagram.com, proxy
+host-suffix, messenger.com, proxy
+host-suffix, whatsapp.com, proxy
+host-suffix, whatsapp.net, proxy
+
+# ---------------- 四、CDN / 图片 / 视频 / 静态资源 ----------------
+# Muse 生成的图片、视频、头像、附件走 Meta CDN
+host-suffix, static.xx.fbcdn.net, proxy
+host-suffix, scontent.xx.fbcdn.net, proxy
+host-suffix, video.xx.fbcdn.net, proxy
+host-suffix, external.xx.fbcdn.net, proxy
+host-suffix, lookaside.fbsbx.com, proxy
+host-suffix, cdn.fbsbx.com, proxy
+host-suffix, static.cdninstagram.com, proxy
+host-suffix, scontent.cdninstagram.com, proxy
+
+# ---------------- 五、Meta IP 段兜底 ----------------
+# 域名规则万一漏了, IP 段再兜一层
+# AS32934 = Meta / Facebook, 下面是主要段
+ip-asn, 32934, proxy
+ip-cidr, 31.13.0.0/16, proxy, no-resolve
+ip-cidr, 157.240.0.0/16, proxy, no-resolve
+ip-cidr, 173.252.0.0/16, proxy, no-resolve
+ip-cidr, 179.60.0.0/16, proxy, no-resolve
+ip-cidr, 185.60.0.0/16, proxy, no-resolve
+ip-cidr, 204.15.0.0/16, proxy, no-resolve
+ip-cidr, 66.220.144.0/20, proxy, no-resolve
+ip-cidr, 69.63.176.0/20, proxy, no-resolve
+ip-cidr, 69.171.224.0/19, proxy, no-resolve
+ip-cidr, 74.119.76.0/22, proxy, no-resolve
+ip-cidr, 102.132.96.0/20, proxy, no-resolve
+ip-cidr, 129.134.0.0/16, proxy, no-resolve
+ip-cidr, 199.201.64.0/20, proxy, no-resolve
+
+# ---------------- 六、USER-AGENT (可选, 需开 MITM 才生效) ----------------
+# iOS 15+ 之后 HTTPS 不开 MITM 看不到 UA, 这段不开 MITM 基本不生效,
+# 留着备用, 不想用就删掉
+# user-agent, Muse, proxy
+# user-agent, com.facebook.aura, proxy
+# user-agent, MetaAI, proxy
+
+# ---------------- 七、Muse 连接器相关 (可选, 默认注释) ----------------
+# Muse 在云端 VM 里帮你连 Gmail / 日历 / GitHub 等, 那些流量
+# 不走你手机, 是 VM 服务器端出的, 所以手机分流里不需要
+# 下面这段只有你在 Muse 网页版里直接打开这些服务、又想走代理时才开,
+# 开了会把整个 Google / GitHub 都走代理, 按需取消注释
+# host-suffix, google.com, proxy
+# host-suffix, gmail.com, proxy
+# host-suffix, googleapis.com, proxy
+# host-suffix, gstatic.com, proxy
+# host-suffix, github.com, proxy
+# host-suffix, githubusercontent.com, proxy
+# host-suffix, openai.com, proxy
