@@ -1,0 +1,26 @@
+# QX DNS 防泄漏配置
+# 用法：把下面 [dns] 整段粘贴进 Quantumult X 配置文件，替换掉原有的 [dns] 段，然后在 QX 里重载配置、重连 VPN。
+# 2026-11-21 实测：doh.pub / 1.1.1.1 / 223.5.5.5 的 DoH 接口都能正常返回解析结果。
+
+[dns]
+no-system
+no-ipv6
+doh-server=https://doh.pub/dns-query
+
+# 说明：
+# - no-system：禁用系统/运营商 DNS，不再走运营商解析，DNS 不泄漏给运营商。
+# - no-ipv6：屏蔽 IPv6 的 DNS 查询，防止 IPv6 直连泄漏。
+# - doh-server：只用第一条 DoH（QX 设了 DoH 后会忽略普通 server 条目）。
+#   这次用 doh.pub（腾讯 DNSPod，国内直连就能通，不走代理节点）。
+#   上次 1.1.1.1 的 DoH 要走代理节点，节点一慢 DNS 就跟着死，所以网页打不开；
+#   这次 DoH 不依赖节点，节点慢也不拖垮 DNS。DoH 是加密查询，运营商看不到你查了哪些域名。
+# - dns_exclusion_list 里不要放任何域名（尤其别放 Block-Apple-Asset 那 8 个苹果域名），
+#   放进去的域名会绕过 QX 的 DNS、走系统 DNS 解析，等于白设。
+# - Chrome 里要关掉自带的“使用安全 DNS”（设置 → 隐私和安全 → 安全），不然 Chrome 会绕过 QX 自己解析。
+# - 验证：连上 QX 后打开 dnsleaktest.com 做 Extended test，或 ipleak.net，
+#   DNS 显示 DNSPod/腾讯而不是运营商/国内 DNS，就是不漏。
+
+# 如果换上之后网页还是打不开，把上面整段删掉，换成下面这段回滚（普通 DNS，不防泄漏但能上网）：
+# [dns]
+# server=223.5.5.5
+# server=119.29.29.29
